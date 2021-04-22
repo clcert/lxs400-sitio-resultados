@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="css/leaflet.css"/>
+        <link rel="stylesheet" href="css/MarkerCluster.Default.css"/>
+        <link rel="stylesheet" href="css/MarkerCluster.css"/>
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/jquery.dataTables.css">
+        <link rel="stylesheet" href="css/Chart.min.css">
+        <link rel="stylesheet" href="css/main.css">
+        <script charset="utf8" src="js/jquery-3.5.1.min.js"></script>
+        <script charset="utf8" src="js/bootstrap.bundle.min.js"></script>
+        <script charset="utf8" src="js/jquery.dataTables.js"></script>
+        <script charset="utf8" src="js/leaflet.js"></script>
+        <!-- <script charset="utf8" src="js/leaflet.markercluster-regionbound.min.js"></script> -->
+        <script charset="utf8" src="js/leaflet.markercluster.js"></script>
+        <script charset="utf8" src="js/Chart.bundle.min.js"></script>
+        <script charset="utf8" src="js/resizer.js"></script>
+        <script charset="utf8" src="js/main.js"></script>
+        <title>Lxs 400 - Mapa de resultados</title>
+    </head>
+    <body>
+        <!-- Pantalla de carga -->
+        <div id="loading-mask" class="modal-backdrop text-center">
+            <div class="loading-indicator">
+                <img class="loading-logo" src="img/logo.svg" alt="Lxs 400">
+                <div>
+                    <img id="progress-gif" src="img/loading.gif" alt="Cargando">
+                </div>
+                <div id="loading-message">Cargando...</div>
+                <div id="error-message">
+                    <p>Los resultados no han sido publicados todavía.</p>
+                    <p>Por favor, vuelve a revisar en unos minutos más.</p>
+
+                </div>
+                <div id="process-message">
+                    <p>En estos momentos se está ejecutando el sorteo.</p>
+                    <p>Los resultados se publicarán en esta página en unos minutos más.</p>
+                </div>
+                <div id="countdown">
+                    <p>El sorteo de manzanas censales se iniciará <span id="countdown-span">unos minutos más</span>.</p>
+                </div>
+            <p><a href="https://chiledelibera.cl"  target="_blank">Más información sobre el proyecto.</a></p>
+            </div>
+            </div>
+        </div>
+        <!-- Modal introductorio -->
+        <div class="modal fade" id="intro-modal" tabindex="-1" role="dialog" aria-labelledby="intro-modal-label" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="intro-modal-label">Resultados publicados</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        El mapa publicado a continuación muestra las manzanas censales asociadas a las viviendas seleccionadas al azar para recibir invitaciones a participar de "Lxs 400: Chile Delibera".</div>
+                        <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">¡Entiendo!</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Sitio -->
+        <nav class="navbar navbar-dark bg-dark flex-md-nowrap p-0 shadow">
+            <a class="navbar-brand mr-0 px-3" href="#"><img class="top-logo" src="img/logo.svg" alt="Lxs 400"></a>
+            <button class="navbar-toggler position-absolute d-md-none show" type="button" data-toggle="collapse" data-target="#sidebar" aria-controls="sidebar" aria-expanded="true" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </nav>
+        <div class="container-fluid">
+            <div class="row main-container">
+                <div class="d-md-block bg-light sidebar show" id="sidebar" style="flex:0 0 50vw">
+                    <ul class="nav nav-tabs" id="tabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-selected="true" id="regiones-tab" data-toggle="tab" href="#regiones" role="tab" aria-controls="regiones">Regiones</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="comunas-tab" data-toggle="tab" href="#comunas" role="tab" aria-controls="comunas">Comunas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="manzanas-tab" data-toggle="tab" href="#manzanas" role="tab" aria-controls="manzanas">Manzanas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="distribucion-tab" data-toggle="tab" href="#distribucion" role="tab" aria-controls="distribucion">Distribución</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="acerca-tab" data-toggle="tab" href="#acerca" role="tab" aria-controls="acerca">Acerca</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="tabs-content">
+                        <div class="tab-pane fade show active" id="regiones" role="tabpanel" aria-labelledby="regiones-tab">
+                            <div class="p-4">
+                                <h3 class="mr-2">Regiones</h3>
+                                <div class="table-responsive">
+                                    <table id="regiones-tabla" class="table"></table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade show" id="comunas" role="tabpanel" aria-labelledby="comunas-tab">
+                            <div class="p-4">
+                                <h3 class="mr-2">Comunas</h3>
+                                <div class="table-responsive">
+                                    <table id="comunas-tabla" class="table"></table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade show" id="manzanas" role="tabpanel" aria-labelledby="manzanas-tab">
+                            <div class="p-4">
+                                <h3 class="mr-2">Manzanas censales seleccionadas</h3>
+                                <div class="table-responsive">
+                                    <table id="manzanas-tabla" class="table highlight-map"></table>
+                                </div>
+                            </div>    q
+                        </div>
+                        <div class="tab-pane fade show" id="distribucion" role="tabpanel" aria-labelledby="distribucion-tab">
+                            <div class="p-4">
+                                <h3 class="mr-2">Distribución</h3>
+                                <div class="canvas-container" id="resumen-container">
+                                    <canvas class="canvas-map" id="resumen-bar"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade show" id="acerca" role="tabpanel" aria-labelledby="acerca-tab">
+                            <div class="p-4">
+
+                                <h4>Sobre este mapa</h4>
+                                <p>Este mapa muestra las manzanas censales de las viviendas que recibirán una invitación para participar en la iniciativa. Las direcciones específicas de las viviendas invitadas NO son mostradas para mantener la privacidad de los potenciales participantes. Puede examinar las manzanas censales sorteadas por región y comuna. También puede ver y buscar sobre el listado completo. Además, en la lengueta "Distribución" puede ver la distribución de las viviendas seleccionadas en comparación a número de viviendas por región.</p>
+                                <h4>Sobre la mecánica del sorteo</h4>
+                                <p>Para más información sobre cómo se realiza este sorteo, puede revisar la <a href="https://random.uchile.cl/lxs400">página del proyecto Random UChile</a>.</p>
+                                <h4>Pulso Utilizado</h4>
+                                <p id="pulse-info">El pulso utilizado en este sorteo es el <a id="pulse-number" href="#"  target="_blank">0</a>, emitido el <b id="pulse-date">día de hoy</b>.</p>
+                                <h4>Descarga de información</h4>
+                                <p>
+                                    Puedes descargar un archivo en formato CSV con un resumen de las manzanas sorteadas desde estos enlaces
+                                    <a href="results/resultados_manzanas_detalle.csv">(lista original)</a> y
+                                    <a href="results/resultados_manzanas_detalle_extendida.csv">(lista extendida)</a>.
+                                </p>
+                                <h4>Fuentes de información</h4>
+                                <p>La información geográfica de manzanas, sus habitantes y sus viviendas es obtenida desde el <a href="https://geoine-ine-chile.opendata.arcgis.com/datasets/54e0c40680054efaabeb9d53b09e1e7a_0/data">sitio web del Instituto Nacional de Estadísticas</a>, basada en datos del Censo 2017.</p>
+                                <h4>Agradecimientos</h4>
+                                <p>Agradecemos a <a href="https://regionbound.com/" target="_blank">RegionBound</a> por facilitar la librería utilizada en la agrupación de los resultados mostrados.</p>
+                                <h4>Organizaciones Participantes</h4>
+                                <div class="container">
+                                    <div class="row">
+                                      <div class="col-sm-2">
+                                        <a href="https://tribu.ong">
+                                            <img class="logo-participante" src="img/tribu.png" alt="Fundación Tribu">
+                                        </a>
+                                      </div>
+                                      <div class="col-sm-2">
+                                        <a href="https://senado.cl">
+                                            <img class="logo-participante" src="img/senado.png" alt="Senado de Chile">
+                                        </a>
+                                    </div>
+                                      <div class="col-sm-2">
+                                        <a href="https://achm.cl">
+                                            <img class="logo-participante" src="img/achm.png" alt="Asociación Chilena de Municipalidades">
+                                        </a>
+                                      </div>
+                                      <div class="col-sm-2">
+                                        <a href="https://uchile.cl">
+                                            <img class="logo-participante" src="img/uchile.png" alt="Universidad de Chile">
+                                        </a>
+                                      </div>
+                                      <div class="col-sm-2">
+                                        <a href="https://cdd.stanford.edu">
+                                            <img class="logo-participante" src="img/stanford.png" alt="Center of Deliberative Democracy - Stanford University">
+                                        </a>
+                                      </div>
+                                    </div>
+                                </div>
+                                <div class="alert alert-danger" role="alert">
+                                    <h4>Importante</h4>
+                                    <p><b>Actualización 18/1/2021</b>: Debido al alto número de manzanas seleccionadas sin información geolocalizada (o con información deficiente), en esta fecha se necesitó agregar 15.000 viviendas adicionales a las 30.000 seleccionadas originalmente. A fin de no alterar la selección publicitada inicialmente, utilizando el mismo pulso utilizado en la ceremonia original (9/12/2020 a las 9:40:00) se volvió a ejecutar el algoritmo de selección especificando ahora el requerimiento de producir 45.000 viviendas. Se garantizó así que las 30.000 viviendas seleccionadas originalmente no fueran cambiadas. La lista final consiste ahora en las 30.000 viviendas originales más 15.000 nuevas viviendas, haciendo un total de 45.000 viviendas seleccionadas. Para más detalle, ver <a href="https://random.uchile.cl/lxs400">el siguiente enlace</a>.</p>
+                                </div>
+                                <div class="alert alert-danger" role="alert">
+                                    <h4>Importante</h4>
+                                    <p><b>Actualización 23/2/2021</b>: Debido al retraso en el despacho de las primeras 25.000 invitaciones (del lote de las 30.000 iniciales), no fue posible mandar invitaciones a las 15.000 viviendas incluidas en forma adicional el día 18/1/2021. El mapa desplegado, actualizado para reflejar esta situación, muestra entonces las manzanas asociadas a 30.000 viviendas seleccionadas originalmente el día 9/1/2020.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div role="main" class="ml-sm-auto map-container">
+                    <div id='map'></div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
