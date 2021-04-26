@@ -6,7 +6,7 @@ for (var i = 0; i < database.length; i++) {
 
 var chacha = new ChaChaRand();
 
-var date = 1619453100000;
+var date = 1619453400000;
 var pulseURL = 'https://random.uchile.cl/beacon/2.0/pulse/time/' + date;
 
 $.ajax( {
@@ -16,8 +16,10 @@ $.ajax( {
 	}).then(function(json) {
 		// seeds prng
 		chacha.reseed(json.pulse.outputValue);
-    var selectedIndex = chacha.randUInt(893);
+    var selectedIndex = chacha.randUInt(database.length);
     $('#ganador').append((selectedIndex + 1) + '.- ' + database[selectedIndex])
+    // TODO: Poner dirección del pulso utilizado
+    $('#pulso').append('El pulso utilizado para el sorteo fue el siguiente: <a href="https://random.uchile.cl/randomness-beacon/advanced-viewer/?chainIdx=' + json.pulse.chainIndex + '&pulseIdx=' + json.pulse.pulseIndex + '" target="_blank">#' + json.pulse.chainIndex + '-' + json.pulse.pulseIndex + '</a>');
 	}).catch(error => {
     $('#ganador').append('Sorteo aún no realizado.')
 });
